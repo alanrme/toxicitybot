@@ -23,6 +23,7 @@ const modelPath = `file://${dirname(fileURLToPath(import.meta.url))}${conf.model
 
 export let model
 export let encoder
+export let client
 // stores functions for each command and event
 export const commands = {}
 export const events = {}
@@ -70,7 +71,7 @@ saveData({}).then(async data => {
 
     // create a client with intents (required so the
     // bot can have access to some properties)
-    const client = new Client({
+    client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
             GatewayIntentBits.GuildMessages,
