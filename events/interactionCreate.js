@@ -1,5 +1,4 @@
-import { commands } from "../loader.js"
-import { encoder } from "../index.js"
+import { commands } from "../index.js"
 
 export const exec = (interaction) => {
     if (interaction.isSelectMenu())
@@ -8,14 +7,14 @@ export const exec = (interaction) => {
     let cmdName
     switch (interaction.commandType) {
         case 2:
-            cmdName = interaction.commandName.toLowerCase() + "UserContext"
+            cmdName = interaction.commandName.replace(/\s/g, "").toLowerCase() + "UserContext"
             break
         case 3: // for message context menu interactions
-            cmdName = interaction.commandName.toLowerCase() + "MsgContext"
+            cmdName = interaction.commandName.replace(/\s/g, "").toLowerCase() + "MsgContext"
             break
         default: // default to slash command
             cmdName = interaction.commandName
     }
     const cmd = commands[cmdName]
-    if (cmd) cmd.exec(interaction, encoder)
+    if (cmd) cmd.exec(interaction)
 }

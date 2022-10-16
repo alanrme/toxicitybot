@@ -1,9 +1,9 @@
 import { EmbedBuilder } from "discord.js"
 import * as db from "../modules/pg.js"
 
-export const exec = async (interaction) => {
+export const exec = async (interaction, forceEphemeral=false) => {
     await db.query(`SELECT * FROM Users WHERE id=$1`, [interaction.targetId], async (err, result) => {
-        let ephemeral, em
+        let em
         if (result.rows[0]) {
             const tag = interaction.targetUser.tag
             em = new EmbedBuilder()
@@ -13,10 +13,10 @@ export const exec = async (interaction) => {
                 )
                 .setFooter({ text: `Calculated from ${result.rows[0].msgcount} messages from ${tag}` })
         } else {
-            ephemeral = true
+            forceEphemeral = true
             em = new EmbedBuilder().setTitle("I've never seen a message with text from this person!")
         }
-        await interaction.reply({ embeds: [em], ephemeral: ephemeral })
+        await interaction.reply({ embeds: [em], ephemeral: forceEphemeral })
     })
 }
 

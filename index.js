@@ -1,15 +1,14 @@
 import * as use from "@tensorflow-models/universal-sentence-encoder"
 import * as tf from "@tensorflow/tfjs-node-gpu"
+import * as fs from "fs"
 import { Client, GatewayIntentBits, REST, Routes } from "discord.js"
 import { config } from "dotenv"
 import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { saveData } from "./modules/readData.js"
 import { trainModel } from "./modules/trainModel.js"
-import * as db from "./modules/pg.js"
 import { selEvents } from "./modules/selectEvents.js"
 import conf from "./config.js"
-import { commands, events } from "./loader.js"
 
 // load .env as environment variables
 config()
@@ -24,6 +23,9 @@ const modelPath = `file://${dirname(fileURLToPath(import.meta.url))}${conf.model
 
 export let model
 export let encoder
+// stores functions for each command and event
+export const commands = {}
+export const events = {}
 
 // run saveData with a blank object
 saveData({}).then(async data => {
@@ -46,6 +48,23 @@ saveData({}).then(async data => {
             console.error(e)
             console.log(conf)
         }
+    }
+
+
+    // loads all command and event files into objects
+    const commandFiles = fs.readdirSync(`.${conf.commandsPath}`).filter(file => file.endsWith('.js'));
+    for (const file of commandFiles) {
+        import(`.${conf.commandsPath}/${file}`).then(command => {
+            let data = command.data
+            if (!data) data = { name: command.name, type: command.type }
+            commands[file.replace(".js", "")] = { exec: command.exec, data: data };
+        })
+    }
+    const eventFiles = fs.readdirSync(`.${conf.eventsPath}`).filter(file => file.endsWith('.js'));
+    for (const file of eventFiles) {
+        import(`.${conf.eventsPath}/${file}`).then(event => {
+            events[file.replace(".js", "")] = event.exec;
+        })
     }
 
 
