@@ -6,6 +6,10 @@ export default {
     "invitePermission": 1376537095232,
     "defaultUserSettings": {
         enableWarn: false,
-        warnSensitivity: 0.40
+        warnSensitivity: 0.36
+    },
+    "defaultGuildSettings": {
+        enableAutoMod: false,
+        modSensitivity: 0.55
     }
 }

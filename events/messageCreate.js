@@ -56,15 +56,22 @@ export const exec = async (message) => {
             if (i.enablewarn == true && tAvg > parseFloat(i.warnsensitivity)) {
                 const guild = message.guild
                 const member = await guild.members.fetch(i.id)
-                const channel = message.channel
                 const mid = member.user.id
+
+                // don't warn if the user to be warned has sent the message
+                if (message.member.user.id == mid) return
+
+                const channel = message.channel
+
                 // if it's been 15 minutes since the last warning,
                 // don't warn again
                 if (warnCache[gid][mid] && diffMins(warnCache[gid][mid], now) < 15) return
+
                 const em = new EmbedBuilder()
                     .setTitle(`Hello ${member.user.tag}! I suggest taking a break from the conversation in ${channel.name} in ${guild.name}.`)
                     .setFooter({ text: "I am telling you this since you have enabled warnings. Disable them by using /set warn" })
                 member.send({ embeds: [em] })    
+                
                 warnCache[gid][mid] = now
             }
         }

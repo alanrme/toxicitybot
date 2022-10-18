@@ -98,5 +98,10 @@ CREATE TABLE IF NOT EXISTS UserSettings (
     warnsensitivity FLOAT(2) DEFAULT ${conf.defaultUserSettings.warnSensitivity},
     CONSTRAINT FK_Users_Settings FOREIGN KEY (id)     
         REFERENCES Users (id)
-)
+);
+CREATE TABLE IF NOT EXISTS GuildSettings (
+    id VARCHAR(19) NOT NULL,
+    enableautomod BOOL DEFAULT ${conf.defaultGuildSettings.enableAutoMod},
+    modsensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.modSensitivity}
+);
 `)
