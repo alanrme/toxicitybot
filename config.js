@@ -6,6 +6,6 @@ export default {
     "invitePermission": 1376537095232,
     "defaultUserSettings": {
         enableWarn: false,
-        warnSensitivity: 0.65
+        warnSensitivity: 0.40
     }
 }

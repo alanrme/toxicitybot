@@ -1,4 +1,5 @@
 import { commands } from "../index.js"
+import { selEvents } from "../modules/selectEvents.js"
 
 export const exec = (interaction) => {
     if (interaction.isSelectMenu())

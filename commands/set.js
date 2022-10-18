@@ -26,15 +26,15 @@ export const exec = async (interaction) => {
                         .addOptions(
                             {
                                 label: 'Low',
-                                value: '0.75',
+                                value: '0.44',
                             },
                             {
                                 label: 'Medium',
-                                value: '0.65',
+                                value: '0.36',
                             },
                             {
                                 label: 'High',
-                                value: '0.55',
+                                value: '0.28',
                             },
                         ),
                 )
