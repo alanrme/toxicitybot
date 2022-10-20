@@ -4,9 +4,12 @@ import * as db from "../modules/pg.js"
 
 // stores toxicity and author of last few messages 
 // in each channel in each server
-let cache = {}
+let chnCache = {}
 // stores time of warning per guild, per member
 let warnCache = {}
+// stores toxicity levels for last few messages per
+// author in each server
+let authCache = {}
 
 export const exec = async (message) => {
     if (!message.content || message.author.id == client.user.id) return
@@ -18,21 +21,25 @@ export const exec = async (message) => {
     const now = new Date()
 
     // initialize objects if they don't exist
-    if (!cache[gid]) cache[gid] = {}
-    if (!cache[gid][cid]) cache[gid][cid] = []
+    if (!chnCache[gid]) chnCache[gid] = {}
+    if (!chnCache[gid][cid]) chnCache[gid][cid] = []
     if (!warnCache[gid]) warnCache[gid] = {}
+    if (!authCache[gid]) authCache[gid] = {}
+    if (!authCache[gid][id]) authCache[gid][id] = []
+
     // pushes message author ID and toxicity to end of cache
-    cache[gid][cid].push([id, prediction, now])
+    chnCache[gid][cid].push([id, prediction, now])
+    authCache[gid][id].push(prediction)
 
     // removes first element if size is too big
-    if (cache[gid][cid].length > 7) {
-        cache[gid][cid].shift()
-    }
+    if (chnCache[gid][cid].length > 7) chnCache[gid][cid].shift()
+    if (authCache[gid][id].length > 10) authCache[gid][id].shift()
+
     // removes all older elements so that a user isn't counted
     // as "involved" in a conversation if their last msg is old
-    cache[gid][cid] = cache[gid][cid].filter(i => diffMins(i[2], now) < 5)
+    chnCache[gid][cid] = chnCache[gid][cid].filter(i => diffMins(i[2], now) < 5)
 
-    const messages = cache[gid][cid]
+    const messages = chnCache[gid][cid]
     // create arrays, one with user IDs which are at index
     // 0, and one with toxicity levels which are at index 1
     let IDs = []
@@ -43,7 +50,14 @@ export const exec = async (message) => {
     });
     // calculate an average for these messages
     const tAvg = tValues.reduce((a, b) => a + b) / tValues.length;
-    console.log(message.channel.name, tAvg)
+
+    // calculate an average toxicity for this msg author, default
+    // to 0 if there are less than a few messages from them so that
+    // automod will not apply
+    const authMsgs = authCache[gid][id]
+    const aAvg = authMsgs.length > 5 ? authMsgs.reduce((a, b) => a + b) / authMsgs.length : 0
+
+    console.log(message.channel.name, tAvg, aAvg)
 
     // get all records for each member involved
     // in the last few messages
@@ -73,6 +87,17 @@ export const exec = async (message) => {
                 member.send({ embeds: [em] })    
                 
                 warnCache[gid][mid] = now
+            }
+        }
+    })
+
+    await db.query(`SELECT * FROM GuildSettings WHERE id=$1`, [gid], async (err, result) => {
+        if (err) return console.error(err)
+        const settings = result.rows[0]
+        if (settings) {
+            // check if the server has enabled automod
+            if (settings.enableautomod == true && aAvg > settings.automodsensitivity) {
+                message.channel.send("Life is a highway And Im gonna ban you all night loong")
             }
         }
     })
