@@ -12,7 +12,7 @@ export default {
         enableAutoMod: false,
         enableAutoDelete: false,
         enableDeleteMsg: true,
-        modSensitivity: 0.55,
+        modSensitivity: 0.52,
         deleteSensitivity: 0.75
     }
 }

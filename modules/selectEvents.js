@@ -20,5 +20,13 @@ export const selEvents = {
             { deleteSensitivity: parseFloat(interaction.values[0]) }
         )
         await interaction.update({ embeds: [em], content: "", components: [] })
+    },
+    setAutoModSensitivity: async (interaction) => {
+        await db.updateRecord(
+            "GuildSettings",
+            interaction.guildId,
+            { modSensitivity: parseFloat(interaction.values[0]) }
+        )
+        await interaction.update({ embeds: [em], content: "", components: [] })
     }
 }

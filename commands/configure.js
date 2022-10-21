@@ -49,7 +49,39 @@ export const exec = async (interaction) => {
             }
             break
         case "automod":
-            console.log("re")
+            switch (interaction.options.getSubcommand()) {
+                case "enable":
+                    await db.updateRecord(
+                        "GuildSettings",
+                        interaction.guildId,
+                        { enableAutoMod: interaction.options.getBoolean("enable") }
+                    )
+                    interaction.reply({ embeds: [setEm], ephemeral: true })
+                    break
+                case "sensitivity":
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new SelectMenuBuilder()
+                                .setCustomId('setAutoModSensitivity')
+                                .setPlaceholder('Nothing selected')
+                                .addOptions(
+                                    {
+                                        label: 'Low',
+                                        value: '0.57',
+                                    },
+                                    {
+                                        label: 'Medium',
+                                        value: '0.52',
+                                    },
+                                    {
+                                        label: 'High',
+                                        value: '0.47',
+                                    },
+                                ),
+                        )
+                    await interaction.reply({ content: 'Choose sensitivity:', components: [row], ephemeral: true });
+                    break
+            }
             break
     }
 }

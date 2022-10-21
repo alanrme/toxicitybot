@@ -33,7 +33,7 @@ export const exec = async (message) => {
 
     // removes first element if size is too big
     if (chnCache[gid][cid].length > 7) chnCache[gid][cid].shift()
-    if (authCache[gid][id].length > 10) authCache[gid][id].shift()
+    if (authCache[gid][id].length > 7) authCache[gid][id].shift()
 
     // removes all older elements so that a user isn't counted
     // as "involved" in a conversation if their last msg is old
@@ -55,7 +55,7 @@ export const exec = async (message) => {
     // to 0 if there are less than a few messages from them so that
     // automod will not apply
     const authMsgs = authCache[gid][id]
-    const aAvg = authMsgs.length > 5 ? authMsgs.reduce((a, b) => a + b) / authMsgs.length : 0
+    const aAvg = authMsgs.length > 4 ? authMsgs.reduce((a, b) => a + b) / authMsgs.length : 0
 
     console.log(message.channel.name, tAvg, aAvg, prediction)
 
@@ -82,7 +82,8 @@ export const exec = async (message) => {
                 if (warnCache[gid][mid] && diffMins(warnCache[gid][mid], now) < 15) return
 
                 const em = new EmbedBuilder()
-                    .setTitle(`Hello ${member.user.tag}! I suggest taking a break from the conversation in ${channel.name} in ${guild.name}.`)
+                    .setTitle(`Hello ${message.author.username}!`)
+                    .setDescription(`I suggest taking a break from the conversation in **${channel.name}** in **${guild.name}**.`)
                     .setFooter({ text: "I am telling you this since you have enabled warnings. Disable them by using /set warn" })
                 member.send({ embeds: [em] })    
                 
@@ -97,16 +98,24 @@ export const exec = async (message) => {
         if (settings) {
             // check if the server has enabled automod
             if (settings.enableautomod == true && aAvg > settings.modsensitivity) {
-                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild))
-                    message.channel.send("Look I know your a admin but fuck you anyways cuz testing")
+                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) return
 
-                message.channel.send("Life is a highway And Im gonna ban you all night loong")
+                if (message.member.moderatable) {
+                    await message.member.send(`Hello ${message.author.username}, you've been kicked from ${message.guild.name} for repeated toxicity.`)
+                    message.member.kick()
+                        .then(() => {
+                            message.channel.send(`Sayonara ${message.author.username}, I don't think you'll be missed.`)
+                        })
+                        .catch(() =>
+                            message.channel.send("I can't kick this member. Either I don't have permissions or I'm below their role."))
+                }
+                // clear the user's cache
+                authCache[gid][id] = []
             }
 
             // check if the server has enabled auto deletion
             if (settings.enableautodelete == true && prediction > settings.deletesensitivity) {
-                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild))
-                    message.channel.send("Look I know your a admin but fuck you anyways cuz testing")
+                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) return
 
                 message.delete()
                     .then(() => {
