@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js"
+import { EmbedBuilder, PermissionsBitField } from "discord.js"
 import { model, encode, encoder, client } from "../index.js"
 import * as db from "../modules/pg.js"
 
@@ -57,7 +57,7 @@ export const exec = async (message) => {
     const authMsgs = authCache[gid][id]
     const aAvg = authMsgs.length > 5 ? authMsgs.reduce((a, b) => a + b) / authMsgs.length : 0
 
-    console.log(message.channel.name, tAvg, aAvg)
+    console.log(message.channel.name, tAvg, aAvg, prediction)
 
     // get all records for each member involved
     // in the last few messages
@@ -96,8 +96,24 @@ export const exec = async (message) => {
         const settings = result.rows[0]
         if (settings) {
             // check if the server has enabled automod
-            if (settings.enableautomod == true && aAvg > settings.automodsensitivity) {
+            if (settings.enableautomod == true && aAvg > settings.modsensitivity) {
+                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild))
+                    message.channel.send("Look I know your a admin but fuck you anyways cuz testing")
+
                 message.channel.send("Life is a highway And Im gonna ban you all night loong")
+            }
+
+            // check if the server has enabled auto deletion
+            if (settings.enableautodelete == true && prediction > settings.deletesensitivity) {
+                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild))
+                    message.channel.send("Look I know your a admin but fuck you anyways cuz testing")
+
+                message.delete()
+                    .then(() => {
+                        if (settings.enabledeletemsg)
+                            message.channel.send(`${message.author.username}, your message has triggered automatic deletion.`)
+                    })
+                    .catch(() => message.channel.send("Error deleting message: I likely don't have permission."))
             }
         }
     })

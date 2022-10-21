@@ -10,10 +10,12 @@ export const exec = async (interaction) => {
                 "UserSettings",
                 interaction.user.id,
                 { enableWarn: interaction.options.getBoolean("enable") },
+                /*
                 {
                     enableWarn: interaction.options.getBoolean("enable"),
                     warnSensitivity: conf.defaultUserSettings.warnSensitivity
                 }
+                */
             )
             interaction.reply({ embeds: [setEm], ephemeral: true })
             break

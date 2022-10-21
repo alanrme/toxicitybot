@@ -23,15 +23,21 @@ export const getClient = async (callback) => {
 export const updateRecord = async (table, id, props, defProps) => {
     await query(`SELECT * FROM ${table} WHERE id=$1`, [id], function(err, result) {
         if (err) console.error(err)
+        
+        // get keys of props as an array
+        const propKeys = Object.keys(props)
+        let setStrings = [] // will have ["key1=$1", "key2=$2" ...]
+        let colStrings = [] // will have ["key1", "key2" ...]
+        let indexStrings = [] // will have ["$1", "$2" ...]
+        // for each key, add a string
+        for (const i in propKeys) {
+            setStrings.push(`${propKeys[i]}=$${i+2}`)
+            colStrings.push(propKeys[i])
+            indexStrings.push(`$${parseInt(i)+2}`)
+        }
+
         // check if a record with id exists in this table, if not make one
         if (result.rows[0]) {
-            // get keys of props as an array
-            const propKeys = Object.keys(props)
-            let setStrings = []
-            // for each key, add a string (final result is like [key=$3, key2=$4, ...])
-            for (const i in propKeys)
-                setStrings.push(`${propKeys[i]}=$${i+2}`)
-
             // if the value needs to be incremented/decremented, replace all values in prop
             // that are equal to "++" with the (old value + 1), same with "--" but decrement
             /*
@@ -60,21 +66,11 @@ export const updateRecord = async (table, id, props, defProps) => {
                 }
             )
         } else {
-            // make a record since it doesn't already exist for this id
-            // use the same stuff from above, but with default props
-            const propKeys = Object.keys(defProps)
-            let setStrings = []
-            let indexStrings = []
-            for (const i in propKeys) {
-                setStrings.push(propKeys[i])
-                indexStrings.push(`$${parseInt(i)+2}`)
-            }
-
             // join them separately because different SQL syntax, and id is
             // always first
             query(
-                `INSERT INTO ${table} (id, ${setStrings.join(", ")}) VALUES ($1, ${indexStrings.join(", ")})`,
-                [id].concat(Object.values(defProps)),
+                `INSERT INTO ${table} (id, ${colStrings.join(", ")}) VALUES ($1, ${indexStrings.join(", ")})`,
+                [id].concat(Object.values(props)),
                 (err) => {
                     if(err) console.log(err)
                 }
@@ -102,6 +98,9 @@ CREATE TABLE IF NOT EXISTS UserSettings (
 CREATE TABLE IF NOT EXISTS GuildSettings (
     id VARCHAR(19) NOT NULL,
     enableautomod BOOL DEFAULT ${conf.defaultGuildSettings.enableAutoMod},
-    modsensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.modSensitivity}
+    enableautodelete BOOL DEFAULT ${conf.defaultGuildSettings.enableAutoDelete},
+    enabledeletemsg BOOL DEFAULT ${conf.defaultGuildSettings.enableDeleteMsg},
+    modsensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.modSensitivity},
+    deletesensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.deleteSensitivity}
 );
 `)

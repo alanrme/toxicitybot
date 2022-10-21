@@ -10,6 +10,9 @@ export default {
     },
     "defaultGuildSettings": {
         enableAutoMod: false,
-        modSensitivity: 0.55
+        enableAutoDelete: false,
+        enableDeleteMsg: true,
+        modSensitivity: 0.55,
+        deleteSensitivity: 0.75
     }
 }
