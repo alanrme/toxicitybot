@@ -7,7 +7,6 @@ import { dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { saveData } from "./modules/readData.js"
 import { trainModel } from "./modules/trainModel.js"
-import { selEvents } from "./modules/selectEvents.js"
 import conf from "./config.js"
 
 // load .env as environment variables
@@ -21,10 +20,10 @@ export const encode = async (encoder, data) => {
 // tf expects a file:// path
 const modelPath = `file://${dirname(fileURLToPath(import.meta.url))}${conf.modelPath}`
 
-export let model
-export let encoder
-export let client
-// stores functions for each command and event
+export let model // tensorflow model
+export let encoder // text encoder
+export let client // discord bot client
+// stores functions&data for each command and event
 export const commands = {}
 export const events = {}
 
@@ -52,7 +51,7 @@ saveData({}).then(async data => {
     }
 
 
-    // loads all command and event files into objects
+    // loads all command and event files into command and event objects
     const commandFiles = fs.readdirSync(`.${conf.commandsPath}`).filter(file => file.endsWith('.js'));
     for (const file of commandFiles) {
         import(`.${conf.commandsPath}/${file}`).then(command => {

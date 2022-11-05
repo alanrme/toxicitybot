@@ -48,6 +48,7 @@ export const exec = async (interaction) => {
                     break
             }
             break
+
         case "automod":
             switch (interaction.options.getSubcommand()) {
                 case "enable":
@@ -83,6 +84,54 @@ export const exec = async (interaction) => {
                     break
             }
             break
+        
+        case "reactions":
+            switch (interaction.options.getSubcommand()) {
+                case "enable":
+                    await db.updateRecord(
+                        "GuildSettings",
+                        interaction.guildId,
+                        { enableReactions: interaction.options.getBoolean("enable") }
+                    )
+                    interaction.reply({ embeds: [setEm], ephemeral: true })
+                    break
+                case "sensitivity":
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new SelectMenuBuilder()
+                                .setCustomId('setReactionSensitivity')
+                                .setPlaceholder('Nothing selected')
+                                .addOptions(
+                                    {
+                                        label: 'Low',
+                                        value: '0.73',
+                                    },
+                                    {
+                                        label: 'Medium',
+                                        value: '0.65',
+                                    },
+                                    {
+                                        label: 'High',
+                                        value: '0.57',
+                                    },
+                                ),
+                        )
+                    await interaction.reply({ content: 'Choose sensitivity:', components: [row], ephemeral: true });
+                    break
+            }
+            break
+        
+        default: // if interaction wasn't a subcommand group
+            switch (interaction.options.getSubcommand()) {
+                case "exempt":
+                    await db.updateRecord(
+                        "GuildSettings",
+                        interaction.guildId,
+                        { adminsExempt: interaction.options.getBoolean("enable") }
+                    )
+                    interaction.reply({ embeds: [setEm], ephemeral: true })
+                    break
+            }
     }
 }
 
@@ -130,6 +179,32 @@ export const data = new SlashCommandBuilder()
         .addSubcommand(subcommand => subcommand
             .setName("sensitivity")
             .setDescription("Configure threshold before a user is punished")
+        )
+    )
+    .addSubcommandGroup(group => group
+        .setName("reactions")
+        .setDescription("Configure message reactions")
+        .addSubcommand(subcommand => subcommand
+            .setName("enable")
+            .setDescription("Enable or disable auto reactions")
+            .addBooleanOption(option => option
+                .setName('enable')
+                .setDescription("Enable or disable")
+                .setRequired(true)
+            )
+        )
+        .addSubcommand(subcommand => subcommand
+            .setName("sensitivity")
+            .setDescription("Configure threshold before a message is reacted to")
+        )
+    )
+    .addSubcommand(subcommand => subcommand
+        .setName("exempt")
+        .setDescription("Exempt admins from deletion and reactions")
+        .addBooleanOption(option => option
+            .setName('enable')
+            .setDescription("Enable or disable exemption")
+            .setRequired(true)
         )
     )
     .setDefaultMemberPermissions(PermissionFlagsBits.ManageGuild)

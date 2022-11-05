@@ -82,7 +82,7 @@ export const exec = async (message) => {
                 if (warnCache[gid][mid] && diffMins(warnCache[gid][mid], now) < 15) return
 
                 const em = new EmbedBuilder()
-                    .setTitle(`Hello ${message.author.username}!`)
+                    .setTitle(`Hello ${member.user.username}!`)
                     .setDescription(`I suggest taking a break from the conversation in **${channel.name}** in **${guild.name}**.`)
                     .setFooter({ text: "I am telling you this since you have enabled warnings. Disable them by using /set warn" })
                 member.send({ embeds: [em] })    
@@ -96,10 +96,13 @@ export const exec = async (message) => {
         if (err) return console.error(err)
         const settings = result.rows[0]
         if (settings) {
+            const isAdmin = settings.adminsexempt && message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)
+            console.log (isAdmin)
+
             // check if the server has enabled automod
             if (settings.enableautomod == true && aAvg > settings.modsensitivity) {
-                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) return
-
+                if (isAdmin) return
+                
                 if (message.member.moderatable) {
                     await message.member.send(`Hello ${message.author.username}, you've been kicked from ${message.guild.name} for repeated toxicity.`)
                     message.member.kick()
@@ -115,7 +118,7 @@ export const exec = async (message) => {
 
             // check if the server has enabled auto deletion
             if (settings.enableautodelete == true && prediction > settings.deletesensitivity) {
-                if (message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) return
+                if (isAdmin) return
 
                 message.delete()
                     .then(() => {
@@ -123,6 +126,18 @@ export const exec = async (message) => {
                             message.channel.send(`${message.author.username}, your message has triggered automatic deletion.`)
                     })
                     .catch(() => message.channel.send("Error deleting message: I likely don't have permission."))
+                
+                // don't run other functions that will need the
+                // message to exist as it is now deleted
+                return
+            }
+
+            // check if the server has enabled reactions
+            if (settings.enablereactions == true && prediction > settings.reactionsensitivity) {
+                if (isAdmin) return
+
+                message.react("😬")
+                    .catch(() => {})
             }
         }
     })

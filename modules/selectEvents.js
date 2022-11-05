@@ -28,5 +28,13 @@ export const selEvents = {
             { modSensitivity: parseFloat(interaction.values[0]) }
         )
         await interaction.update({ embeds: [em], content: "", components: [] })
+    },
+    setReactionSensitivity: async (interaction) => {
+        await db.updateRecord(
+            "GuildSettings",
+            interaction.guildId,
+            { reactionSensitivity: parseFloat(interaction.values[0]) }
+        )
+        await interaction.update({ embeds: [em], content: "", components: [] })
     }
 }

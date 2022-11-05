@@ -100,7 +100,10 @@ CREATE TABLE IF NOT EXISTS GuildSettings (
     enableautomod BOOL DEFAULT ${conf.defaultGuildSettings.enableAutoMod},
     enableautodelete BOOL DEFAULT ${conf.defaultGuildSettings.enableAutoDelete},
     enabledeletemsg BOOL DEFAULT ${conf.defaultGuildSettings.enableDeleteMsg},
+    enablereactions BOOL DEFAULT ${conf.defaultGuildSettings.enableReactions},
+    adminsexempt BOOL DEFAULT ${conf.defaultGuildSettings.adminsExempt},
     modsensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.modSensitivity},
-    deletesensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.deleteSensitivity}
+    deletesensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.deleteSensitivity},
+    reactionsensitivity FLOAT(2) DEFAULT ${conf.defaultGuildSettings.reactionSensitivity}
 );
 `)

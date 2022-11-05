@@ -12,7 +12,14 @@ export default {
         enableAutoMod: false,
         enableAutoDelete: false,
         enableDeleteMsg: true,
+        enableReactions: false,
+        adminsExempt: true,
         modSensitivity: 0.52,
-        deleteSensitivity: 0.75
+        deleteSensitivity: 0.75,
+        reactionSensitivity: 0.65
+    },
+    "guildSettingsOptions": {
+        modSensitivity: [],
+        deleteSensitivity: []
     }
 }
